@@ -26,3 +26,6 @@ Backend/env/
 
 # python cache
 Backend/*/__pycache__/
+
+#database
+Backend/*.db
