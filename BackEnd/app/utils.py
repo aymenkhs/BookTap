@@ -52,7 +52,36 @@ class User:
         pass
 
 class Comment:
-    pass
+    def __init__(self, id_comment, book, user, content, deleted, upvotes, downvotes,
+                            replies):
+        self.id_comment = id_comment
+        self.book = book
+        self.user = user
+        self.content = content
+        self.deleted = deleted
+        self.upvotes = upvotes
+        self.downvotes = downvotes
+        self.replies = replies
+
+    @classmethod
+    def create(cls, **info_comment):
+        pass
+
+    @classmethod
+    def update(cls, id_comment, new_content):
+        pass
+
+    @classmethod
+    def search(cls, id_comment):
+        pass
+
+    @classmethod
+    def delete(cls, id_comment):
+        pass
+
+    @classmethod
+    def get_total_comments(cls):
+        pass
 
 class Book:
     def __init__(self, id_book, book_name, categorie, global_grade, editor, release_year,
