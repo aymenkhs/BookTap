@@ -92,4 +92,33 @@ class Book:
         pass
 
 class Author:
-    pass
+    def __init__(self, id_author, name_author, birth_date, death_date, biography):
+        self.id_author = id_author
+        self.name_author = name_author
+        self.birth_date = birth_date
+        self.death_date = death_date
+        self.biography = biography
+
+    @classmethod
+    def create(cls, **info_author):
+        pass
+
+    @classmethod
+    def update(cls, id_book, **info_author):
+        pass
+
+    @classmethod
+    def search(cls, **info_author):
+        pass
+
+    @classmethod
+    def delete(cls, id_author):
+        pass
+
+    @classmethod
+    def return_all_authors(cls, **info_author):
+        pass
+
+    @classmethod
+    def get_total_authors(cls):
+        pass
