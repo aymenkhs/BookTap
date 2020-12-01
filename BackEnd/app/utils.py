@@ -55,7 +55,41 @@ class Comment:
     pass
 
 class Book:
-    pass
+    def __init__(self, id_book, book_name, categorie, global_grade, editor, release_year,
+                    nb_pages, abstract, cover_page):
+        self.id_book = id_book
+        self.book_name = book_name
+        self.categorie = categorie
+        self.global_grade = global_grade
+        self.editor = editor
+        self.release_year = release_year
+        self.nb_pages = nb_pages
+        self.cover_page = cover_page
+        self.abstract = abstract
+
+    @classmethod
+    def create(cls, **info_book):
+        pass
+
+    @classmethod
+    def update(cls, id_book, **info_book):
+        pass
+
+    @classmethod
+    def search(cls, **info_book):
+        pass
+
+    @classmethod
+    def delete(cls, id_book):
+        pass
+
+    @classmethod
+    def return_all_books(cls, **info_book):
+        pass
+
+    @classmethod
+    def get_total_books(cls):
+        pass
 
 class Author:
     pass
