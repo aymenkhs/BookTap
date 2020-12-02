@@ -8,9 +8,8 @@ def select(table, val="*", by="id"):
 
 def insert(table, **values):
     db = database.db_connection()
-    cursor = db.cursor()
-
-    cursor.close()
+    with closing(db.cursor()) as cursor:
+        pass
 
 def modify(table, to_modify, by="id", **values):
     db = database.db_connection()

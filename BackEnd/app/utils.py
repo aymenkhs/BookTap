@@ -1,4 +1,4 @@
-
+from app import database
 
 
 class User:
@@ -39,17 +39,49 @@ class User:
         pass
 
     @classmethod
-    def log_in(cls, id):
-        pass
+    def login(cls, identifient, password, methode="username"):
+        db = database.db_connection()
+        cursor = db.cursor()
+
+        if methode == "username":
+            sql_query = "SELECT password FROM user WHERE username=?"
+        elif methode == "email":
+            sql_query = "SELECT password FROM user WHERE email=?"
+
+        cursor.execute(sql_query, (identifient, ))
+        row = cursor.fetchone()
+        if row == None:
+            raise ValueError("useranme or email inexistent")
+        else:
+            # I'm gonna change this part to add some security to the password
+            if row[0] == password:
+                print("authantication confirmed")
+                # charging the user data
+                return True
+            else:
+                print("wait, you're an impostor")
+                return False
+        cursor.close()
+
 
     @classmethod
     def register(cls, username, password, email, biography, profile_picture,
-                    birth_date, deleted):
-        self.id = User.get_total_users() + 1
+                    birth_date):
+        db = database.db_connection()
+        cursor = db.cursor()
+
+        #check the informaion given
+        id = User.get_total_users() + 1
+        sql_query = "INSERT INTO user(id_user, username, password, email, biography, path_proile_picture, birth_date) VALUES(?, ?, ?, ?, ?, ?, ?)"
+        print(sql_query)
+        cursor.execute(sql_query, (id, username, password, email, biography, profile_picture, birth_date))
+        # creating an object with the user data
+        cursor.close()
+        db.commit()
 
     @classmethod
     def get_total_users(cls):
-        pass
+        return 0
 
 class Comment:
     def __init__(self, id_comment, book, user, content, deleted, upvotes, downvotes,
