@@ -71,56 +71,20 @@ class User:
         cursor = db.cursor()
 
         #check the informaion given
-        id = User.get_total_users() + 1
-        sql_query = "INSERT INTO user(id_user, username, password, email, biography, path_proile_picture, birth_date) VALUES(?, ?, ?, ?, ?, ?, ?)"
+        sql_query = "INSERT INTO user(username, password, email, biography, path_proile_picture, birth_date) VALUES(?, ?, ?, ?, ?, ?)"
         print(sql_query)
-        cursor.execute(sql_query, (id, username, password, email, biography, profile_picture, birth_date))
+        cursor.execute(sql_query, (username, password, email, biography, profile_picture, birth_date))
         # creating an object with the user data
         cursor.close()
         db.commit()
 
-    @classmethod
-    def get_total_users(cls):
-        return 0
-
-class Comment:
-    def __init__(self, id_comment, book, user, content, deleted, upvotes, downvotes,
-                            replies):
-        self.id_comment = id_comment
-        self.book = book
-        self.user = user
-        self.content = content
-        self.deleted = deleted
-        self.upvotes = upvotes
-        self.downvotes = downvotes
-        self.replies = replies
-
-    @classmethod
-    def create(cls, **info_comment):
-        pass
-
-    @classmethod
-    def update(cls, id_comment, new_content):
-        pass
-
-    @classmethod
-    def search(cls, id_comment):
-        pass
-
-    @classmethod
-    def delete(cls, id_comment):
-        pass
-
-    @classmethod
-    def get_total_comments(cls):
-        pass
 
 class Book:
     def __init__(self, id_book, book_name, categorie, global_grade, editor, release_year,
                     nb_pages, abstract, cover_page):
         self.id_book = id_book
         self.book_name = book_name
-        self.categorie = categorie
+        self.category = category
         self.global_grade = global_grade
         self.editor = editor
         self.release_year = release_year
@@ -128,29 +92,84 @@ class Book:
         self.cover_page = cover_page
         self.abstract = abstract
 
-    @classmethod
-    def create(cls, **info_book):
+    def delete(cls, id_book):
+        pass
+
+    def update(cls, id_book, **info_book):
         pass
 
     @classmethod
-    def update(cls, id_book, **info_book):
-        pass
+    def create(cls, **info_book):
+        db = database.db_connection()
+        cursor = db.cursor()
+
+        #check the informaion given
+        Book.__check_informations(info_book)
+
+        if "id_author" in info_book:
+            # searching if the author exist
+            sql_query = "INSERT INTO book(book_name, category, global_grade, editor, abstract, nb_pages, path_cover_page, release_year, id_author) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)"
+            cursor.execute(sql_query, (info_book["book_name"], info_book["category"], info_book["global_grade"],
+                info_book["editor"], info_book["abstract"], info_book["nb_pages"], info_book["path_cover_page"],
+                        info_book["release_year"], info_book["id_author"]))
+        elif "author" in info_book:
+            # finding the id_author
+            sql_query = "INSERT INTO book(book_name, category, global_grade, editor, abstract, nb_pages, path_cover_page, release_year, id_author) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)"
+            cursor.execute(sql_query, (info_book["book_name"], info_book["category"], info_book["global_grade"],
+                info_book["editor"], info_book["abstract"], info_book["nb_pages"], info_book["path_cover_page"],
+                        info_book["release_year"], info_book["id_author"]))
+        else:
+            sql_query = "INSERT INTO book(book_name, category, global_grade, editor, abstract, nb_pages, path_cover_page, release_year) VALUES(?, ?, ?, ?, ?, ?, ?, ?)"
+            cursor.execute(sql_query, (info_book["book_name"], info_book["category"], info_book["global_grade"],
+                info_book["editor"], info_book["abstract"], info_book["nb_pages"], info_book["path_cover_page"],
+                                            info_book["release_year"]))
+        # creating an object with the book data
+        cursor.close()
+        db.commit()
 
     @classmethod
     def search(cls, **info_book):
         pass
 
     @classmethod
-    def delete(cls, id_book):
-        pass
+    def search_by_id(cls, id):
+        db = database.db_connection()
+        cursor = db.cursor()
+
+        sql_query = "SELECT * FROM book where id_book=?"
+        cursor.execute(sql_query, (id))
+        row = cursor.fetchone()
+
+        if row == None:
+            raise ValueError("book non existent")
+        else:
+            # charge the book and return it
+            print(row)
+
+        cursor.close()
+
 
     @classmethod
-    def return_all_books(cls, **info_book):
-        pass
+    def return_all_books(cls):
+        db = database.db_connection()
+        cursor = db.cursor()
+        sql_query = "SELECT * FROM book"
+        cursor.execute(sql_query)
+        row = cursor.fetchall()
+        return row
+        # charging each book as an object in a list and returning it
 
     @classmethod
-    def get_total_books(cls):
-        pass
+    def __check_informations(cls, info_book):
+        default_info = ["global_grade", "editor", "abstract", "nb_pages", "path_cover_page", "release_year"]
+
+        if "book_name" not in info_book or "category" not in info_book:
+            raise ValueError("the book name or the category are missing")
+        else:
+            for information in default_info:
+                if information not in info_book:
+                    info_book[information] = None
+
 
 class Author:
     def __init__(self, id_author, name_author, birth_date, death_date, biography):
@@ -182,4 +201,37 @@ class Author:
 
     @classmethod
     def get_total_authors(cls):
+        pass
+
+
+class Comment:
+    def __init__(self, id_comment, book, user, content, deleted, upvotes, downvotes,
+                            replies):
+        self.id_comment = id_comment
+        self.book = book
+        self.user = user
+        self.content = content
+        self.deleted = deleted
+        self.upvotes = upvotes
+        self.downvotes = downvotes
+        self.replies = replies
+
+    @classmethod
+    def create(cls, **info_comment):
+        pass
+
+    @classmethod
+    def update(cls, id_comment, new_content):
+        pass
+
+    @classmethod
+    def search(cls, id_comment):
+        pass
+
+    @classmethod
+    def delete(cls, id_comment):
+        pass
+
+    @classmethod
+    def get_total_comments(cls):
         pass
