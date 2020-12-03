@@ -148,7 +148,6 @@ class Book:
 
         cursor.close()
 
-
     @classmethod
     def return_all_books(cls):
         db = database.db_connection()
@@ -191,7 +190,7 @@ class Author:
         cursor = db.cursor()
 
         #check the informaion given
-        Book.__check_informations(info_author)
+        Author.__check_informations(info_author)
 
         sql_query = "INSERT INTO author(author_lastname, author_firstname, birth_date, death_date, biography, path_picture) VALUES(?, ?, ?, ?, ?, ?)"
         cursor.execute(sql_query, (info_author["last_name"], info_author["first_name"], info_author["birth_date"],
@@ -222,7 +221,7 @@ class Author:
         cursor.close()
 
     @classmethod
-    def return_all_authors(cls, **info_author):
+    def return_all_authors(cls):
         db = database.db_connection()
         cursor = db.cursor()
         sql_query = "SELECT * FROM author"
@@ -235,12 +234,12 @@ class Author:
     def __check_informations(cls, info_author):
         default_info = ["birth_date", "death_date", "biography", "path_picture"]
 
-        if "last_name" not in info_book or "first_name" not in info_book:
+        if "last_name" not in info_author or "first_name" not in info_author:
             raise ValueError("the last name or the first name of the author are missing")
         else:
             for information in default_info:
-                if information not in info_book:
-                    info_book[information] = None
+                if information not in info_author:
+                    info_author[information] = None
 
 
 class Comment:
