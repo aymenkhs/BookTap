@@ -4,7 +4,7 @@ from app import database
 class User:
 
     def __init__(self, id, username, password, email, biography, profile_picture,
-                    birth_date, deleted):
+                    birth_date, deleted=False, conected=False):
         self.id = id
         self.username = username
         self.password = password
@@ -13,6 +13,7 @@ class User:
         self.profile_picture = profile_picture
         self.birth_date = birth_date
         self.deleted = deleted
+        self.conected = conected
 
     def like(self, book):
         pass
@@ -40,6 +41,13 @@ class User:
 
     @classmethod
     def login(cls, identifient, password, methode="username"):
+        """
+        method to login a user
+
+            identifient(str): can be an email or a username depending on he methode value
+            password(str): well... the password (must be hashed)
+            methode(str): "email" or "username" to differencie bettween them
+        """
         db = database.db_connection()
         cursor = db.cursor()
 
@@ -50,33 +58,80 @@ class User:
 
         cursor.execute(sql_query, (identifient, ))
         row = cursor.fetchone()
+        cursor.close()
         if row == None:
             raise ValueError("useranme or email inexistent")
         else:
             # I'm gonna change this part to add some security to the password
             if row[0] == password:
                 print("authantication confirmed")
-                # charging the user data
-                return True
+                # charging the user data and if the account is deleted we must change that
+                user_data = User.search(identifient, by=methode)
+                return User(user_data["id_user"], user_data["username"], user_data["password"], user_data["email"],
+                    user_data["biography"], user_data["path_proile_picture"], user_data["birth_date"],
+                                                conected=True)
             else:
                 print("wait, you're an impostor")
                 return False
-        cursor.close()
-
 
     @classmethod
-    def register(cls, username, password, email, biography, profile_picture,
-                    birth_date):
+    def search(cls, identifient, by="id"):
+        if by == "id":
+            sql_query = "SELECT * FROM user WHERE id_user=?"
+        elif by == "username":
+            sql_query = "SELECT * FROM user WHERE username=?"
+        elif by == "email":
+            sql_query = "SELECT * FROM user WHERE email=?"
+
+        db = database.db_connection()
+        cursor = db.cursor()
+        cursor.execute(sql_query, (identifient, ))
+        row = cursor.fetchone()
+        cursor.close()
+        return row
+
+    @classmethod
+    def register(cls, **info_user):
         db = database.db_connection()
         cursor = db.cursor()
 
         #check the informaion given
         sql_query = "INSERT INTO user(username, password, email, biography, path_proile_picture, birth_date) VALUES(?, ?, ?, ?, ?, ?)"
-        print(sql_query)
-        cursor.execute(sql_query, (username, password, email, biography, profile_picture, birth_date))
-        # creating an object with the user data
+        cursor.execute(sql_query, (info_user["username"], info_user["password"], info_user["email"],
+                info_user["biography"], info_user["profile_picture"], info_user["birth_date"]))
         cursor.close()
         db.commit()
+
+        # creating an object with the user data
+        return User(User.__get_last_id, info_user["username"], info_user["password"], info_user["email"],
+                info_user["biography"], info_user["profile_picture"], info_user["birth_date"])
+
+    @classmethod
+    def __get_last_id(cls):
+        """ rerurn the last ID """
+        db = database.db_connection()
+        cursor = db.cursor()
+        sql_query = "SELECT max(id_user) FROM user"
+        cursor.execute(sql_query)
+        row = cursor.fetchone()
+        cursor.close()
+        return row[0]
+
+    @classmethod
+    def __get_id_by_username(cls):
+        """ return the ID assossiated with this username """
+
+    @classmethod
+    def __check_informations(cls, info_user):
+        default_info = ["biography", "profile_picture", "birth_date"]
+
+        if "username" not in info_user or "password" not in info_user or "email" not in info_user:
+            raise ValueError("the username, password or the email are missing")
+        else:
+            for information in default_info:
+                if information not in info_user:
+                    info_user[information] = None
+
 
 
 class Book:
