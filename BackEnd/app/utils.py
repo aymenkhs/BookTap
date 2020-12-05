@@ -1,5 +1,7 @@
 from app import database
 
+def str_to_date(data_str):
+    pass
 
 class User:
 
@@ -66,16 +68,24 @@ class User:
             if row[0] == password:
                 print("authantication confirmed")
                 # charging the user data and if the account is deleted we must change that
-                user_data = User.search(identifient, by=methode)
-                return User(user_data["id_user"], user_data["username"], user_data["password"], user_data["email"],
-                    user_data["biography"], user_data["path_proile_picture"], user_data["birth_date"],
-                                                conected=True)
+                user_data = User.search(identifient, by=methode, type_retrun="dict")
+                return User( **user_data, conected=True)
             else:
                 print("wait, you're an impostor")
                 return False
 
     @classmethod
-    def search(cls, identifient, by="id"):
+    def search(cls, identifient, by="id", type_retrun="object"):
+        """
+        method to search a user in our database
+
+        parameters:
+            identifient(str): can be an email or a username or the id depending on he "by" value
+            password(str): well... the password (must be hashed)
+            by(str): "email" or "username" or "id" to differencie bettween them, DEFAULT : "id".
+            type_retrun(str): "object" or "dict" or "row" , represent what the unction is supposed to return ,
+                can be an user object, a dict containing the different values or an sqlite row, DEFAULT : "object".
+        """
         if by == "id":
             sql_query = "SELECT * FROM user WHERE id_user=?"
         elif by == "username":
@@ -88,7 +98,15 @@ class User:
         cursor.execute(sql_query, (identifient, ))
         row = cursor.fetchone()
         cursor.close()
-        return row
+
+        if type_retrun == "object":
+            user_dict = User.__row_to_dict(row)
+        elif type_retrun == "dict":
+            return User.__row_to_dict(row)
+        elif type_retrun == "row":
+            return row
+        else:
+            raise ValueError("type_retrun parameter must be: 'object' or 'dict' or 'row'")
 
     @classmethod
     def register(cls, **info_user):
@@ -96,6 +114,7 @@ class User:
         cursor = db.cursor()
 
         #check the informaion given
+        User.__check_informations(info_user)
         sql_query = "INSERT INTO user(username, password, email, biography, path_proile_picture, birth_date) VALUES(?, ?, ?, ?, ?, ?)"
         cursor.execute(sql_query, (info_user["username"], info_user["password"], info_user["email"],
                 info_user["biography"], info_user["profile_picture"], info_user["birth_date"]))
@@ -103,7 +122,7 @@ class User:
         db.commit()
 
         # creating an object with the user data
-        return User(User.__get_last_id, info_user["username"], info_user["password"], info_user["email"],
+        return User(User.__get_last_id(), info_user["username"], info_user["password"], info_user["email"],
                 info_user["biography"], info_user["profile_picture"], info_user["birth_date"])
 
     @classmethod
@@ -115,11 +134,20 @@ class User:
         cursor.execute(sql_query)
         row = cursor.fetchone()
         cursor.close()
-        return row[0]
+        return int(row[0])
 
     @classmethod
-    def __get_id_by_username(cls):
-        """ return the ID assossiated with this username """
+    def __row_to_dict(cls, row):
+        return {
+            "id" : int(row["id_user"]),
+            "username" : row["username"],
+            "password" : row["password"],
+            "email" : row["email"],
+            "biography" : row["biography"],
+            "profile_picture" : row["path_proile_picture"],
+            "birth_date" : str_to_date(row["birth_date"]),
+            "deleted" : bool(row["deleted"])
+        }
 
     @classmethod
     def __check_informations(cls, info_user):
