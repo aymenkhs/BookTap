@@ -101,6 +101,7 @@ class User:
 
         if type_retrun == "object":
             user_dict = User.__row_to_dict(row)
+            return User(**user_dict)
         elif type_retrun == "dict":
             return User.__row_to_dict(row)
         elif type_retrun == "row":
